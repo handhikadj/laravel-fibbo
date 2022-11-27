@@ -16,6 +16,7 @@ class ComputeFibonacci implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $numb;
+    public $userTimeout;
     public $failOnTimeout = true;
 
     /**
@@ -23,9 +24,10 @@ class ComputeFibonacci implements ShouldQueue
      *
      * @return void
      */
-    public function __construct(int $numb)
+    public function __construct(int $numb, int $userTimeout)
     {
         $this->numb = $numb;
+        $this->userTimeout = now()->addSeconds($userTimeout + 2);
     }
 
     /**
@@ -35,17 +37,26 @@ class ComputeFibonacci implements ShouldQueue
      */
     public function handle()
     {
-        $result = Fibonacci::compute($this->numb);
+        $result = $this->compute($this->numb);
 
-        dump($result);
+        if ($result == 'failed') return;
 
-        $fib = Fibonacci::first();
-
-        if ($fib->status == Fibonacci::FAILED) return;
-
-        $fib->update([
+        Fibonacci::first()->update([
             'status' => Fibonacci::PROCESSED,
             'result' => $result
         ]);
+    }
+
+    private function compute($numb)
+    {
+        if ($numb <= 1) return 1;
+
+        if ($this->userTimeout->toDateTimeString() == now()->toDateTimeString()) {
+            $this->fail(new \Exception('get Timedout'));
+            $this->delete();
+            return 'failed';
+        }
+
+        return $this->compute($numb - 1) + $this->compute($numb - 2);
     }
 }

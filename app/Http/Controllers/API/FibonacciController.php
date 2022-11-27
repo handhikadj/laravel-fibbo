@@ -54,11 +54,7 @@ class FibonacciController extends Controller
             'status' => Fibonacci::PROCESSING
         ]);
 
-        ComputeFibonacci::dispatch(request()->numb);
-
-        if (request()->has('timeout') && request()->filled('timeout')) {
-            TimeoutWatcher::dispatch(request()->timeout);
-        }
+        ComputeFibonacci::dispatch(request()->numb, request()->timeout);
 
         return [
             'message' => "Request accepted. Computing... Visit /result endpoint to see the status"
