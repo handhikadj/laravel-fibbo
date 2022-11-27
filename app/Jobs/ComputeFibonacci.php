@@ -19,6 +19,9 @@ class ComputeFibonacci implements ShouldQueue
     public $userTimeout;
     public $failOnTimeout = true;
 
+    // I've tried. this does not work
+    // public $timeout = 60;
+
     /**
      * Create a new job instance.
      *
@@ -26,6 +29,9 @@ class ComputeFibonacci implements ShouldQueue
      */
     public function __construct(int $numb, int $userTimeout)
     {
+        // I've tried. this does not work. provided a workaround to tackle this
+        // $this->timeout = $userTimeout;
+
         $this->numb = $numb;
         $this->userTimeout = now()->addSeconds($userTimeout + 2);
     }
