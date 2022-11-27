@@ -17,11 +17,4 @@ class Fibonacci extends Model
         'status',
         'result'
     ];
-
-    public static function compute(int $num)
-    {
-        if ($num <= 1) return 1;
-
-        return round(pow((sqrt(5) + 1) / 2, $num) / sqrt(5));
-    }
 }
