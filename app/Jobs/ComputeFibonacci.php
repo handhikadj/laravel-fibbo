@@ -16,11 +16,8 @@ class ComputeFibonacci implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $numb;
-    public $userTimeout;
+    public $timeout = 120;
     public $failOnTimeout = true;
-
-    // I've tried. this does not work
-    // public $timeout = 60;
 
     /**
      * Create a new job instance.
@@ -29,11 +26,8 @@ class ComputeFibonacci implements ShouldQueue
      */
     public function __construct(int $numb, int $userTimeout)
     {
-        // I've tried. this does not work. provided a workaround to tackle this
-        // $this->timeout = $userTimeout;
-
         $this->numb = $numb;
-        $this->userTimeout = now()->addSeconds($userTimeout + 2);
+        $this->timeout = $userTimeout;
     }
 
     /**
@@ -45,8 +39,6 @@ class ComputeFibonacci implements ShouldQueue
     {
         $result = $this->compute($this->numb);
 
-        if ($result == 'failed') return;
-
         Fibonacci::first()->update([
             'status' => Fibonacci::PROCESSED,
             'result' => $result
@@ -56,12 +48,6 @@ class ComputeFibonacci implements ShouldQueue
     private function compute($numb)
     {
         if ($numb <= 1) return 1;
-
-        if ($this->userTimeout->toDateTimeString() == now()->toDateTimeString()) {
-            $this->fail(new \Exception('get Timedout'));
-            $this->delete();
-            return 'failed';
-        }
 
         return $this->compute($numb - 1) + $this->compute($numb - 2);
     }
